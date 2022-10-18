@@ -1,6 +1,7 @@
 package com.subari.accountbook.account.controller
 
 import com.subari.accountbook.account.domain.AccountStatus
+import com.subari.accountbook.account.dto.GetAccountRes
 import com.subari.accountbook.account.dto.ModifyAccountReq
 import com.subari.accountbook.account.service.AccountService
 import com.subari.accountbook.account.dto.PostAccountReq
@@ -29,13 +30,42 @@ class AccountController(private val accountService: AccountService, private val 
         return BaseResponse(postAccountRes)
     }
 
+    @GetMapping("")
+    fun getAccountList(authentication: Authentication): BaseResponse<List<GetAccountRes>> {
+
+        val userDetails: UserDetails = authentication.principal as UserDetails
+        val user = userService.findUser(userDetails.username)
+
+        val accounts = accountService.getAccountList(user)
+
+        val getAccountListRes: ArrayList<GetAccountRes> = arrayListOf()
+        accounts.forEach{
+            getAccountListRes.add(GetAccountRes(it.id!!, it.amount, it.memo, it.status, it.createdAt!!))
+        }
+
+        return BaseResponse(getAccountListRes)
+    }
+
+    @GetMapping("/{accountId}")
+    fun getAccount(authentication: Authentication, @PathVariable accountId: String): BaseResponse<GetAccountRes> {
+
+        val userDetails: UserDetails = authentication.principal as UserDetails
+        val user = userService.findUser(userDetails.username)
+
+        val account = accountService.getAccount(accountId.toLong(), user)
+        val getAccountRes = GetAccountRes(account.id!!, account.amount, account.memo, account.status, account.createdAt!!)
+
+        return BaseResponse(getAccountRes)
+    }
+
+
     @PutMapping("/{accountId}")
     fun modifyAccount(authentication: Authentication, @PathVariable accountId: String, @RequestBody @Valid modifyAccountReq: ModifyAccountReq): BaseResponse<Any> {
 
         val userDetails: UserDetails = authentication.principal as UserDetails
         val user = userService.findUser(userDetails.username)
 
-        accountService.modifyAccount(accountId.toLong(), user, modifyAccountReq.amount, modifyAccountReq.memo, modifyAccountReq.date)
+        accountService.modifyAccount(accountId.toLong(), user, modifyAccountReq.amount, modifyAccountReq.memo)
 
         return BaseResponse(SUCCESS)
     }

@@ -14,12 +14,12 @@ import java.time.LocalDate
 class AccountService(private val accountRepository: AccountRepository) {
 
     fun createAccount(postAccountReq: PostAccountReq, user: User): Long {
-        val account = Account(postAccountReq.amount, postAccountReq.memo, postAccountReq.date, AccountStatus.ACTIVE, user)
+        val account = Account(postAccountReq.amount, postAccountReq.memo, AccountStatus.ACTIVE, user)
         val insertedAccount = accountRepository.save(account)
         return insertedAccount.id!!
     }
 
-    fun modifyAccount(accountId: Long, user: User, amount: Int, memo: String, date: LocalDate) {
+    fun modifyAccount(accountId: Long, user: User, amount: Int, memo: String) {
         val account = accountRepository.findAccountById(accountId)
 
         if(account === null) {
@@ -32,7 +32,6 @@ class AccountService(private val accountRepository: AccountRepository) {
 
         account.amount = amount
         account.memo = memo
-        account.date = date
 
         accountRepository.save(account)
     }
@@ -50,5 +49,25 @@ class AccountService(private val accountRepository: AccountRepository) {
 
         account.status = status
         accountRepository.save(account)
+    }
+
+    fun getAccountList(user: User): List<Account> {
+        val accounts = accountRepository.findAllByUser(user)
+
+        return accounts
+    }
+
+    fun getAccount(accountId: Long, user: User): Account {
+        val account = accountRepository.findAccountById(accountId)
+
+        if(account === null) {
+            throw BaseException(ACCOUNT_NOT_FOUND)
+        }
+
+        if(account.user !== user){
+            throw BaseException(ACCOUNT_USER_NOT_MATCH)
+        }
+
+        return account
     }
 }

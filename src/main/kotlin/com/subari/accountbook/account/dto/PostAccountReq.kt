@@ -6,5 +6,4 @@ data class PostAccountReq (
     // TODO: 양수만 가능하게
     val amount: Int,
     val memo: String,
-    val date: LocalDate
         )
