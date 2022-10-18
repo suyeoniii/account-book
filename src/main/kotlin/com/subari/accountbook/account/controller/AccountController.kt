@@ -1,5 +1,6 @@
 package com.subari.accountbook.account.controller
 
+import com.subari.accountbook.account.domain.AccountStatus
 import com.subari.accountbook.account.dto.ModifyAccountReq
 import com.subari.accountbook.account.service.AccountService
 import com.subari.accountbook.account.dto.PostAccountReq
@@ -39,11 +40,24 @@ class AccountController(private val accountService: AccountService, private val 
         return BaseResponse(SUCCESS)
     }
 
-    @PatchMapping("/:accountId/deletion")
-    fun deleteAccount(authentication: Authentication, @PathVariable accountId: String, @RequestBody @Valid modifyAccountReq: ModifyAccountReq): BaseResponse<Any> {
+    @PatchMapping("/{accountId}/deletion")
+    fun deleteAccount(authentication: Authentication, @PathVariable accountId: String): BaseResponse<Any> {
 
         val userDetails: UserDetails = authentication.principal as UserDetails
         val user = userService.findUser(userDetails.username)
+
+        accountService.updateAccountStatus(accountId.toLong(), user, AccountStatus.DELETED)
+
+        return BaseResponse(SUCCESS)
+    }
+
+    @PatchMapping("/{accountId}/restoration")
+    fun restoreAccount(authentication: Authentication, @PathVariable accountId: String): BaseResponse<Any> {
+
+        val userDetails: UserDetails = authentication.principal as UserDetails
+        val user = userService.findUser(userDetails.username)
+
+        accountService.updateAccountStatus(accountId.toLong(), user, AccountStatus.ACTIVE)
 
         return BaseResponse(SUCCESS)
     }

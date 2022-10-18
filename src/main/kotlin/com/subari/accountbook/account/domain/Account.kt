@@ -6,7 +6,7 @@ import java.time.LocalDate
 import javax.persistence.*
 
 @Entity
-class Account(amount: Int, memo: String, date: LocalDate, user: User): BaseTime() {
+class Account(amount: Int, memo: String, date: LocalDate, status: AccountStatus, user: User): BaseTime() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "account_id")
@@ -20,6 +20,10 @@ class Account(amount: Int, memo: String, date: LocalDate, user: User): BaseTime(
 
     @Column(nullable = false)
     var date: LocalDate = date
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    var status: AccountStatus = status
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

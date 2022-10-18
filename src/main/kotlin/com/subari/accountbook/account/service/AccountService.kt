@@ -1,6 +1,7 @@
 package com.subari.accountbook.account.service
 
 import com.subari.accountbook.account.domain.Account
+import com.subari.accountbook.account.domain.AccountStatus
 import com.subari.accountbook.account.repository.AccountRepository
 import com.subari.accountbook.account.dto.PostAccountReq
 import com.subari.accountbook.user.domain.User
@@ -13,7 +14,7 @@ import java.time.LocalDate
 class AccountService(private val accountRepository: AccountRepository) {
 
     fun createAccount(postAccountReq: PostAccountReq, user: User): Long {
-        val account = Account(postAccountReq.amount, postAccountReq.memo, postAccountReq.date, user)
+        val account = Account(postAccountReq.amount, postAccountReq.memo, postAccountReq.date, AccountStatus.ACTIVE, user)
         val insertedAccount = accountRepository.save(account)
         return insertedAccount.id!!
     }
@@ -33,6 +34,21 @@ class AccountService(private val accountRepository: AccountRepository) {
         account.memo = memo
         account.date = date
 
+        accountRepository.save(account)
+    }
+
+    fun updateAccountStatus(accountId: Long, user: User, status: AccountStatus){
+        val account = accountRepository.findAccountById(accountId)
+
+        if(account === null) {
+            throw BaseException(ACCOUNT_NOT_FOUND)
+        }
+
+        if(account.user !== user){
+            throw BaseException(ACCOUNT_USER_NOT_MATCH)
+        }
+
+        account.status = status
         accountRepository.save(account)
     }
 }
