@@ -1,8 +1,7 @@
 package com.subari.accountbook.security.jwt
 
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
+import com.subari.accountbook.util.AuthenticateException
+import io.jsonwebtoken.*
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetails
@@ -13,9 +12,8 @@ import javax.annotation.PostConstruct
 
 @Component
 class JwtTokenProvider(private val userDetailsService: UserDetailsService) {
-    private var secretKey = "testeststsetse"
-
-    private val tokenValidTime = 10000000
+    private var secretKey = "jwt_secret_key"
+    private val tokenValidTime = 60 * 60 * 24 * 30
 
     @PostConstruct
     protected fun init() {
@@ -52,9 +50,18 @@ class JwtTokenProvider(private val userDetailsService: UserDetailsService) {
     }
 
     private fun getAllClaims(token: String): Claims {
-        return Jwts.parser()
-            .setSigningKey(secretKey)
-            .parseClaimsJws(token)
-            .body
+        try {
+            return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).body
+        } catch (expiredJwtException: ExpiredJwtException) {
+            throw AuthenticateException("Jwt 토큰이 만료되었습니다.")
+        } catch (unsupportedJwtException: UnsupportedJwtException) {
+            throw AuthenticateException("Jwt 토큰이 만료되었습니다.")
+        } catch (malformedJwtException: MalformedJwtException) {
+            throw AuthenticateException("Jwt 토큰이 만료되었습니다.")
+        } catch (signatureException: SignatureException) {
+            throw AuthenticateException("Jwt 토큰이 만료되었습니다.")
+        } catch (illegalArgumentException: IllegalArgumentException) {
+            throw AuthenticateException("Jwt 토큰이 만료되었습니다.")
+        }
     }
 }

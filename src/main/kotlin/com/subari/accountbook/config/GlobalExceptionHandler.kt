@@ -18,6 +18,7 @@ import javax.lang.model.type.NullType
 class GlobalExceptionHandler: ResponseEntityExceptionHandler() {
     @ExceptionHandler(BaseException::class)
     protected fun handleBaseException(e: BaseException): ResponseEntity<Any> {
+        println("base")
         return ResponseEntity.status(e.baseResponseCode.status)
             .body(BaseResponse<NullType>(e.baseResponseCode))
     }
@@ -35,6 +36,7 @@ class GlobalExceptionHandler: ResponseEntityExceptionHandler() {
             val errorResponse = ErrorResponse(false, code, message)
             return ResponseEntity(errorResponse, headers, status)
         }
+        println("400 error")
         return ResponseEntity(ErrorResponse(false, 4000, error.defaultMessage!!), headers, status)
     }
 
@@ -45,6 +47,7 @@ class GlobalExceptionHandler: ResponseEntityExceptionHandler() {
         status: HttpStatus,
         request: WebRequest
     ): ResponseEntity<Any> {
+        println("exception")
         var errorResponseDto: ErrorResponse
         errorResponseDto = if (status == HttpStatus.INTERNAL_SERVER_ERROR) {
             ErrorResponse(false, 5000, "Internal Server Error")

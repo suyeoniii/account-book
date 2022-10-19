@@ -8,17 +8,20 @@ import com.subari.accountbook.user.domain.User
 import com.subari.accountbook.util.BaseException
 import com.subari.accountbook.util.BaseResponseCode.*
 import org.springframework.stereotype.Service
-import java.time.LocalDate
+import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional(readOnly = true)
 class AccountService(private val accountRepository: AccountRepository) {
 
+    @Transactional
     fun createAccount(postAccountReq: PostAccountReq, user: User): Long {
         val account = Account(postAccountReq.amount, postAccountReq.memo, AccountStatus.ACTIVE, user)
         val insertedAccount = accountRepository.save(account)
         return insertedAccount.id!!
     }
 
+    @Transactional
     fun modifyAccount(accountId: Long, user: User, amount: Int, memo: String) {
         val account = accountRepository.findAccountById(accountId)
 
@@ -36,6 +39,7 @@ class AccountService(private val accountRepository: AccountRepository) {
         accountRepository.save(account)
     }
 
+    @Transactional
     fun updateAccountStatus(accountId: Long, user: User, status: AccountStatus){
         val account = accountRepository.findAccountById(accountId)
 
@@ -45,6 +49,14 @@ class AccountService(private val accountRepository: AccountRepository) {
 
         if(account.user !== user){
             throw BaseException(ACCOUNT_USER_NOT_MATCH)
+        }
+
+        if(status === AccountStatus.DELETED && account.status === AccountStatus.DELETED){
+            throw BaseException(ACCOUNT_STATUS_ALREADY_DELETED)
+        }
+
+        if(status === AccountStatus.ACTIVE && account.status === AccountStatus.ACTIVE){
+            throw BaseException(ACCOUNT_STATUS_ALREADY_ACTIVE)
         }
 
         account.status = status

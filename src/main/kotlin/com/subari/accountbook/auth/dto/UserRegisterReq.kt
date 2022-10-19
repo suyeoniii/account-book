@@ -3,7 +3,6 @@ package com.subari.accountbook.auth.dto
 import org.hibernate.validator.constraints.Length
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Pattern
 
 data class UserRegisterReq(
     @field:NotNull

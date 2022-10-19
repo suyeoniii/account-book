@@ -9,18 +9,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
-import org.springframework.security.core.AuthenticationException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import java.lang.Exception
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig(val jwtTokenProvider: JwtTokenProvider): WebSecurityConfigurerAdapter() {
+class SecurityConfig(val jwtTokenProvider: JwtTokenProvider, val customAuthenticationEntryPoint: CustomAuthenticationEntryPoint): WebSecurityConfigurerAdapter() {
 
     @Bean
     fun passwordEncoder(): PasswordEncoder {
@@ -43,13 +39,11 @@ class SecurityConfig(val jwtTokenProvider: JwtTokenProvider): WebSecurityConfigu
             .antMatchers("/auth/**").permitAll()
             .antMatchers("/", "/**").authenticated()
             .and()
-            .addFilterBefore(JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter::class.java)
-            //.exceptionHandling()
-            //.authenticationEntryPoint(unauthorizedEntryPoint())
-    }
-
-    @Bean
-    fun unauthorizedEntryPoint(): AuthenticationEntryPoint? {
-        return AuthenticationEntryPoint { request: HttpServletRequest?, response: HttpServletResponse, authException: AuthenticationException? -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED) }
+            .addFilterBefore(
+                JwtAuthenticationFilter(jwtTokenProvider),
+                UsernamePasswordAuthenticationFilter::class.java
+            )
+            .exceptionHandling()
+            .authenticationEntryPoint(customAuthenticationEntryPoint)
     }
 }

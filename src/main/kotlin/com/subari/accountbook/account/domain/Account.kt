@@ -2,7 +2,6 @@ package com.subari.accountbook.account.domain
 
 import com.subari.accountbook.user.domain.User
 import com.subari.accountbook.util.BaseTime
-import java.time.LocalDate
 import javax.persistence.*
 
 @Entity
@@ -24,5 +23,5 @@ class Account(amount: Int, memo: String, status: AccountStatus, user: User): Bas
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    var user: User? = user
+    var user: User = user
 }

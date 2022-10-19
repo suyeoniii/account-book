@@ -1,6 +1,5 @@
 package com.subari.accountbook.account.dto
 
-import com.subari.accountbook.account.domain.Account
 import com.subari.accountbook.account.domain.AccountStatus
 import java.time.LocalDateTime
 

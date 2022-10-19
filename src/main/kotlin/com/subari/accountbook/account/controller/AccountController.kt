@@ -19,7 +19,7 @@ import javax.validation.Valid
 class AccountController(private val accountService: AccountService, private val userService: UserService) {
 
     @PostMapping("")
-    fun createAccount(authentication: Authentication, @RequestBody @Valid postAccountReq: PostAccountReq): BaseResponse<Any> {
+    fun createAccount(authentication: Authentication, @Valid @RequestBody postAccountReq: PostAccountReq): BaseResponse<Any> {
 
         val userDetails: UserDetails = authentication.principal as UserDetails
         val user = userService.findUser(userDetails.username) // find by email
@@ -47,12 +47,12 @@ class AccountController(private val accountService: AccountService, private val 
     }
 
     @GetMapping("/{accountId}")
-    fun getAccount(authentication: Authentication, @PathVariable accountId: String): BaseResponse<GetAccountRes> {
+    fun getAccount(authentication: Authentication, @PathVariable accountId: Long): BaseResponse<GetAccountRes> {
 
         val userDetails: UserDetails = authentication.principal as UserDetails
         val user = userService.findUser(userDetails.username)
 
-        val account = accountService.getAccount(accountId.toLong(), user)
+        val account = accountService.getAccount(accountId, user)
         val getAccountRes = GetAccountRes(account.id!!, account.amount, account.memo, account.status, account.createdAt!!)
 
         return BaseResponse(getAccountRes)
@@ -60,34 +60,34 @@ class AccountController(private val accountService: AccountService, private val 
 
 
     @PutMapping("/{accountId}")
-    fun modifyAccount(authentication: Authentication, @PathVariable accountId: String, @RequestBody @Valid modifyAccountReq: ModifyAccountReq): BaseResponse<Any> {
+    fun modifyAccount(authentication: Authentication, @PathVariable accountId: Long, @Valid @RequestBody modifyAccountReq: ModifyAccountReq): BaseResponse<Any> {
 
         val userDetails: UserDetails = authentication.principal as UserDetails
         val user = userService.findUser(userDetails.username)
 
-        accountService.modifyAccount(accountId.toLong(), user, modifyAccountReq.amount, modifyAccountReq.memo)
+        accountService.modifyAccount(accountId, user, modifyAccountReq.amount as Int, modifyAccountReq.memo)
 
         return BaseResponse(SUCCESS)
     }
 
     @PatchMapping("/{accountId}/deletion")
-    fun deleteAccount(authentication: Authentication, @PathVariable accountId: String): BaseResponse<Any> {
+    fun deleteAccount(authentication: Authentication, @PathVariable accountId: Long): BaseResponse<Any> {
 
         val userDetails: UserDetails = authentication.principal as UserDetails
         val user = userService.findUser(userDetails.username)
 
-        accountService.updateAccountStatus(accountId.toLong(), user, AccountStatus.DELETED)
+        accountService.updateAccountStatus(accountId, user, AccountStatus.DELETED)
 
         return BaseResponse(SUCCESS)
     }
 
     @PatchMapping("/{accountId}/restoration")
-    fun restoreAccount(authentication: Authentication, @PathVariable accountId: String): BaseResponse<Any> {
+    fun restoreAccount(authentication: Authentication, @PathVariable accountId: Long): BaseResponse<Any> {
 
         val userDetails: UserDetails = authentication.principal as UserDetails
         val user = userService.findUser(userDetails.username)
 
-        accountService.updateAccountStatus(accountId.toLong(), user, AccountStatus.ACTIVE)
+        accountService.updateAccountStatus(accountId, user, AccountStatus.ACTIVE)
 
         return BaseResponse(SUCCESS)
     }
